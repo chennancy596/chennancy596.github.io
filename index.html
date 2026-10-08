@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nanxi Chen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Serif+SC:wght@400;500&display=swap">
+<style>
+/* Layout: a quiet night borrowed from To the Moon. Soft starfield behind every page, a painted
+   moonlit landscape on the opening screens, translucent dialogue boxes with name tags, and thin
+   teal "memento" corners around photos. Serif for voice, sans for facts. Single dark world. */
+:root {
+  --sky0: #0a0f1d;
+  --sky1: #131c33;
+  --ink: #eef0f5;
+  --soft: #cfd4de;
+  --dim: #8f98ab;
+  --box: rgba(48, 52, 64, .62);
+  --edge: rgba(226, 229, 236, .55);
+  --teal: #8fc6d9;
+  --teal-dim: rgba(143, 198, 217, .22);
+  --moon: #f2e4ae;
+  --font-display: "Spectral", Georgia, "Times New Roman", serif;
+  --font-body: "PT Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-zh: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --gutter: clamp(16px, 4vw, 48px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--sky0); color: var(--ink); font: 400 1rem/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
+a { color: var(--ink); text-decoration-color: var(--dim); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--teal); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 400; }
+img { max-width: 100%; }
+.caps { font-family: var(--font-body); font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); }
+
+/* ---------- night sky ---------- */
+#sky { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse 90% 70% at 75% 0%, #1a2645 0%, transparent 60%), linear-gradient(180deg, var(--sky0) 0%, var(--sky1) 100%); }
+#sky canvas { width: 100%; height: 100%; display: block; }
+
+/* ---------- top bar ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 24px; padding: 14px var(--gutter); background: rgba(10, 15, 29, .72); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(226, 229, 236, .07); }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 1.2rem; text-decoration: none; white-space: nowrap; }
+.brand svg { width: 20px; height: 20px; flex: none; }
+.links { display: flex; gap: 24px; margin-left: auto; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.links::-webkit-scrollbar { display: none; }
+.links a { position: relative; font-size: .92rem; text-decoration: none; color: var(--dim); white-space: nowrap; padding: 4px 0 4px 13px; transition: color .2s; }
+.links a::before { content: ""; position: absolute; left: 0; top: 50%; margin-top: -4px; border-left: 6px solid var(--moon); border-top: 4px solid transparent; border-bottom: 4px solid transparent; opacity: 0; transition: opacity .2s; }
+.links a:hover { color: var(--ink); }
+.links a[aria-current="page"] { color: var(--ink); }
+.links a[aria-current="page"]::before { opacity: 1; }
+
+.menu-btn { display: none; margin-left: auto; font-family: var(--font-display); font-style: italic; font-size: 1.02rem; color: var(--ink); background: var(--box); border: 1px solid var(--edge); border-radius: 6px; padding: 2px 14px 3px; cursor: pointer; }
+::selection { background: rgba(143,198,217,.35); color: #fff; }
+
+/* ---------- pages ---------- */
+.page { display: none; }
+.page.active { display: block; animation: fadein .6s ease; }
+@keyframes fadein { from { opacity: .3; } to { opacity: 1; } }
+main { min-height: calc(100vh - 150px); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(40px, 6vw, 72px) var(--gutter); }
+
+/* ---------- dialogue box ---------- */
+.dlg { position: relative; background: var(--box); backdrop-filter: blur(6px); border: 1px solid var(--edge); border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.35); padding: 22px 28px 30px; }
+.dlg.tagged { margin-top: 44px; }
+.dlg .who { position: absolute; left: 16px; top: -8px; transform: translateY(-100%); background: var(--box); backdrop-filter: blur(6px); border: 1px solid var(--edge); border-radius: 6px; box-shadow: 0 0 0 1px rgba(0,0,0,.35); padding: 3px 16px 4px; font-family: var(--font-display); font-style: italic; font-size: 1.02rem; white-space: nowrap; }
+.dlg .next { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid var(--edge); animation: bob 1.6s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translate(-50%, 3px); } }
+.dlg p { margin: 0 0 .8em; }
+.dlg p:last-of-type { margin-bottom: 0; }
+
+/* ---------- memento frame: hugs the photo ---------- */
+.memento {
+  --c: var(--teal);
+  margin: 0; position: relative; padding: 7px; align-self: start;
+  border: 1px solid var(--teal-dim);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 12px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 1.5px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 12px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1.5px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 12px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1.5px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 12px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1.5px 12px no-repeat;
+}
+.memento img { display: block; width: 100%; height: auto; }
+.memento figcaption { font-family: var(--font-display); font-style: italic; font-size: .98rem; color: var(--soft); padding: 9px 4px 2px; display: flex; align-items: center; gap: 8px; }
+.swirl { width: 13px; height: 13px; flex: none; }
+
+/* ---------- page title card ---------- */
+.card { text-align: center; padding: clamp(64px, 10vw, 112px) var(--gutter) 0; }
+.card h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(2.8rem, 7vw, 4.6rem); line-height: 1.02; margin-top: 14px; letter-spacing: -.01em; }
+.card .dlg { max-width: 600px; margin: 60px auto 0; text-align: left; }
+
+/* ---------- panels / rows ---------- */
+.sec { font-family: var(--font-display); font-style: italic; font-size: 1.5rem; margin: clamp(48px, 7vw, 72px) 0 18px; display: flex; align-items: center; gap: 16px; color: var(--moon); }
+.sec::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(242,228,174,.35), transparent); }
+.panel { padding: 4px 28px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; row-gap: 3px; padding: 18px 0; border-top: 1px solid rgba(226, 229, 236, .1); }
+.row:first-child { border-top: 0; }
+.row h3 { font-weight: 700; font-size: 1.05rem; line-height: 1.4; }
+.row .when { font-size: .88rem; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.row .sub { grid-column: 1 / -1; color: var(--teal); font-size: .94rem; }
+.row .key { grid-column: 1 / -1; margin: 3px 0 0; color: var(--soft); }
+.badge { display: inline-block; font-size: .68rem; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; color: var(--moon); border: 1px solid rgba(242,228,174,.4); border-radius: 999px; padding: 1px 9px; margin-left: 8px; vertical-align: 2px; white-space: nowrap; }
+
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
+.cols > div { display: flex; flex-direction: column; }
+.cols .panel { flex: 1; }
+.kv { margin: 0; padding: 10px 0; display: grid; gap: 14px; }
+.kv dt { font-size: .74rem; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); }
+.kv dd { margin: 2px 0 0; }
+
+/* ================= HOME ================= */
+.title-screen { text-align: center; padding-top: clamp(64px, 12vh, 140px); }
+.title-screen h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(3.4rem, 10.5vw, 7.2rem); line-height: .98; letter-spacing: -.015em; margin-top: 18px; color: #f8f4e8; text-shadow: 0 0 50px rgba(242,228,174,.16); }
+.title-screen .sub { margin: 16px 0 0; color: var(--dim); font-size: 1rem; letter-spacing: .06em; }
+.menu { list-style: none; margin: clamp(30px, 6vh, 52px) auto 0; padding: 0; display: grid; gap: 4px; text-align: center; }
+.menu a { position: relative; display: inline-block; font-family: var(--font-display); font-size: clamp(1.15rem, 2.4vw, 1.35rem); color: var(--soft); text-decoration: none; padding: 1px 4px; transition: color .2s; }
+.menu a::before { content: ""; position: absolute; left: -16px; top: 50%; margin-top: -5px; border-left: 8px solid var(--moon); border-top: 5px solid transparent; border-bottom: 5px solid transparent; opacity: 0; transition: opacity .2s; }
+.menu a:hover, .menu a:focus-visible { color: #fff; outline: none; }
+.menu a:hover::before, .menu a:focus-visible::before { opacity: 1; }
+.landscape { display: block; width: 100%; height: auto; aspect-ratio: 16 / 6; -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent); mask-image: linear-gradient(180deg, #000 80%, transparent); }
+
+.home { position: relative; max-width: 1160px; margin: 0 auto; padding: clamp(48px, 8vh, 96px) var(--gutter) clamp(80px, 16vh, 180px); }
+.home .dlg { max-width: 640px; margin: 0 auto; }
+.home .dlg .zh { font-family: var(--font-zh); font-size: 1.15rem; letter-spacing: .04em; }
+.home .dlg .en { font-family: var(--font-display); font-style: italic; font-size: 1.12rem; color: var(--soft); }
+
+/* ================= ABOUT ================= */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.bio p:first-child { font-family: var(--font-display); font-size: 1.28rem; line-height: 1.5; }
+
+/* ================= RESEARCH ================= */
+.pub { padding: 22px 26px; }
+.pub p { margin: 8px 0 0; font-family: var(--font-display); font-size: 1.12rem; line-height: 1.55; }
+.figure { margin-top: clamp(48px, 7vw, 72px); }
+
+/* ================= SHEETS: experience / research / awards ================= */
+.sheet { max-width: 960px; margin: 0 auto; padding: clamp(72px, 11vw, 128px) var(--gutter) clamp(72px, 10vw, 120px); }
+.sheet-head { padding-bottom: clamp(40px, 6vw, 56px); border-bottom: 1px solid rgba(226,229,236,.14); }
+.sheet-head h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(2.3rem, 5.2vw, 3.6rem); line-height: 1.08; letter-spacing: -.01em; margin-top: 16px; max-width: 18ch; }
+.sheet-head .lede { margin: 20px 0 0; max-width: 46ch; font-family: var(--font-display); font-style: italic; font-size: clamp(1.1rem, 1.8vw, 1.28rem); line-height: 1.55; color: var(--soft); }
+.tl-label { margin: clamp(48px, 7vw, 72px) 0 4px; font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); }
+.sheet-head + .tl { margin-top: 8px; }
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl-row { display: grid; grid-template-columns: 10rem minmax(0, 1fr); column-gap: 40px; padding: 28px 0; border-bottom: 1px solid rgba(226,229,236,.1); }
+.tl-when { font-size: .88rem; color: var(--dim); font-variant-numeric: tabular-nums; padding-top: .3em; }
+.tl-body h3 { text-wrap: pretty; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.2rem, 2vw, 1.42rem); line-height: 1.3; }
+.tl-role { margin-top: 4px; color: var(--teal); font-size: .95rem; }
+.tl-body p { margin: 8px 0 0; color: var(--soft); max-width: 52ch; }
+.tl-eyebrow, .tl-award { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 6px; }
+.tl-eyebrow { color: var(--dim); }
+.tl-award { color: var(--moon); }
+.tl-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.tl-list li { font-size: .88rem; color: var(--soft); border: 1px solid rgba(226,229,236,.18); border-radius: 999px; padding: 2px 12px; }
+.cite { margin-top: 14px; padding: 26px 30px 24px; }
+.cite blockquote { margin: 0; font-family: var(--font-display); font-weight: 300; font-size: clamp(1.35rem, 2.6vw, 1.75rem); line-height: 1.32; color: var(--ink); }
+.cite figcaption { padding: 14px 0 0; font-family: var(--font-body); font-style: normal; font-size: .92rem; color: var(--dim); display: block; }
+.cite figcaption strong { color: var(--soft); font-weight: 700; }
+.vignette { display: block; width: 100%; height: auto; aspect-ratio: 16 / 5; margin-top: clamp(56px, 8vw, 96px); -webkit-mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent), linear-gradient(180deg, transparent, #000 30%, #000 88%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent), linear-gradient(180deg, transparent, #000 30%, #000 88%, transparent); mask-composite: intersect; }
+
+/* ================= MOON & BUNNY ================= */
+.moon-head { text-align: center; padding-top: clamp(56px, 10vh, 120px); }
+.moon-head h1 { font-family: var(--font-display); font-weight: 300; font-style: italic; font-size: clamp(3rem, 9vw, 6.2rem); line-height: 1; margin-top: 16px; color: #f8f4e8; text-shadow: 0 0 50px rgba(242,228,174,.18); }
+.moon-head p { font-family: var(--font-display); font-size: clamp(1.05rem, 2vw, 1.25rem); color: var(--soft); margin: 18px auto 0; max-width: 34ch; }
+
+.family { max-width: 760px; margin: 0 auto; padding: clamp(32px, 5vw, 56px) var(--gutter) 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 5vw, 56px); align-items: start; }
+.member { margin: 0; }
+.member .memento { display: block; }
+.crop { aspect-ratio: 4 / 5; overflow: hidden; }
+.crop img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.member figcaption { padding: 20px 4px 0; display: grid; gap: 4px; }
+.member h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; line-height: 1.1; }
+.member figcaption p { margin: 2px 0 0; font-family: var(--font-display); font-style: italic; font-size: 1.1rem; color: var(--soft); }
+
+.story { max-width: 760px; margin: 0 auto; padding: clamp(96px, 14vw, 168px) var(--gutter) clamp(40px, 6vw, 80px); }
+.story-title { text-align: center; margin-bottom: clamp(72px, 10vw, 120px); }
+.story-title h2 { font-family: var(--font-display); font-weight: 300; font-size: clamp(2.3rem, 5.6vw, 4rem); line-height: 1.05; margin-top: 14px; }
+.story-title h2 em { color: var(--moon); }
+
+.chapter { position: relative; margin-top: clamp(96px, 14vw, 160px); }
+.chapter:first-of-type { margin-top: 0; }
+.opener { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 22px; align-items: end; margin-bottom: 28px; }
+.opener .num { grid-row: 1 / span 2; font-family: var(--font-display); font-weight: 300; font-style: italic; font-size: clamp(3.6rem, 8vw, 5.4rem); line-height: .8; color: var(--teal); min-width: 1.1em; }
+.opener h3 { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: clamp(1.7rem, 3.6vw, 2.4rem); line-height: 1.1; }
+.opener.center { grid-template-columns: 1fr; justify-items: center; text-align: center; row-gap: 8px; }
+.opener.center .num { grid-row: auto; min-width: 0; }
+
+.prose p { font-family: var(--font-display); font-weight: 300; font-size: clamp(1.14rem, 1.7vw, 1.3rem); line-height: 1.8; color: #e3e6ee; margin: 0 0 1.05em; }
+.prose p.drop::first-letter { float: left; font-weight: 400; font-size: 3.6em; line-height: .8; color: var(--moon); margin: 8px 12px 0 0; }
+.prose.center p { margin-inline: auto; text-align: center; max-width: 32em; }
+
+.pull { margin: clamp(40px, 6vw, 64px) 0 0; padding: 4px 0 4px clamp(20px, 4vw, 32px); border-left: 1px solid rgba(242,228,174,.45); }
+.pull p { font-family: var(--font-display); font-style: italic; font-weight: 300; font-size: clamp(1.6rem, 3.6vw, 2.4rem); line-height: 1.25; color: var(--moon); margin: 0; }
+
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(16px, 3vw, 28px); margin-top: clamp(40px, 6vw, 56px); align-items: start; }
+.pair .crop { aspect-ratio: 3 / 4; }
+.pair figcaption { font-family: var(--font-display); font-style: italic; color: var(--soft); font-size: 1rem; padding: 10px 2px 2px; text-align: center; display: block; }
+.zoom { all: unset; cursor: zoom-in; display: block; }
+.zoom:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+
+.rainy { padding: clamp(64px, 9vw, 104px) var(--gutter); margin-inline: calc(-1 * var(--gutter)); overflow: hidden; background: linear-gradient(180deg, rgba(20,28,48,0), rgba(20,28,48,.6) 25%, rgba(20,28,48,.6) 75%, rgba(20,28,48,0)); }
+.rainy canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rainy > *:not(canvas) { position: relative; }
+
+.quote-dlg { max-width: 680px; margin: clamp(56px, 8vw, 80px) auto 0; }
+.quote-dlg p { font-family: var(--font-display); font-size: clamp(1.25rem, 2.4vw, 1.5rem); line-height: 1.5; }
+
+.coda { text-align: center; padding: clamp(88px, 13vw, 150px) 0 clamp(40px, 6vw, 80px); display: grid; justify-items: center; gap: 16px; }
+.coda svg { width: 42px; height: 42px; }
+.coda .end { font-family: var(--font-display); font-style: italic; font-size: clamp(1.5rem, 3vw, 2rem); color: var(--moon); }
+
+/* ---------- pager ---------- */
+.pager { max-width: 960px; margin: 0 auto; padding: 0 var(--gutter) clamp(56px, 8vw, 88px); display: flex; gap: 24px; }
+.pager[hidden] { display: none; }
+.pager a { flex: 1; max-width: 50%; display: grid; gap: 4px; padding-top: 22px; border-top: 1px solid rgba(226,229,236,.14); text-decoration: none; }
+.pager .next { margin-left: auto; text-align: right; }
+.pager .t { font-family: var(--font-display); font-style: italic; font-size: clamp(1.3rem, 2.6vw, 1.7rem); color: var(--ink); transition: color .2s; }
+.pager a:hover .t, .pager a:focus-visible .t { color: var(--moon); }
+
+/* ---------- background music ---------- */
+.music { position: fixed; z-index: 30; right: calc(var(--gutter) - 4px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 12px; padding: 7px 16px 7px 7px; background: rgba(36, 40, 54, .82); backdrop-filter: blur(10px); border: 1px solid var(--edge); border-radius: 999px; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 12px 30px rgba(0,0,0,.4); }
+.music button { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(242,228,174,.5); background: rgba(242,228,174,.08); color: var(--moon); cursor: pointer; padding: 0; }
+.music button:hover { background: rgba(242,228,174,.18); }
+.music .ico-play { width: 0; height: 0; border-left: 10px solid var(--moon); border-top: 6px solid transparent; border-bottom: 6px solid transparent; margin-left: 3px; }
+.music .eq { display: none; gap: 2px; align-items: flex-end; height: 14px; }
+.music .eq i { display: block; width: 3px; background: var(--moon); border-radius: 1px; animation: eq 1s ease-in-out infinite; }
+.music .eq i:nth-child(1) { height: 60%; animation-delay: -.2s; }
+.music .eq i:nth-child(2) { height: 100%; animation-delay: -.6s; }
+.music .eq i:nth-child(3) { height: 40%; animation-delay: -.4s; }
+@keyframes eq { 50% { transform: scaleY(.35); } }
+.music .eq i { transform-origin: bottom; }
+.music.nudge button { animation: pulse 2s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(242,228,174,.5); } 100% { box-shadow: 0 0 0 14px rgba(242,228,174,0); } }
+.music.playing .ico-play { display: none; }
+.music.playing .eq { display: flex; }
+.music-meta { display: grid; line-height: 1.25; min-width: 0; }
+.music-meta .caps { font-size: .62rem; }
+.music-meta .t { font-family: var(--font-display); font-style: italic; font-size: .98rem; color: var(--ink); white-space: nowrap; }
+@media (max-width: 600px) { .music { padding-right: 7px; } .music-meta { display: none; } }
+@media (prefers-reduced-motion: reduce) { .music .eq i, .music.nudge button { animation: none; } }
+
+/* ---------- lightbox ---------- */
+[hidden] { display: none !important; }
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(6, 9, 18, .95); display: grid; place-items: center; padding: 24px 16px; }
+.lightbox img { max-width: 100%; max-height: 80vh; object-fit: contain; display: block; margin: 0 auto; }
+.lightbox p { font-family: var(--font-display); font-style: italic; color: var(--soft); text-align: center; margin: 14px 0 0; }
+.lightbox .close { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 16px; font: inherit; font-size: .9rem; background: var(--box); border: 1px solid var(--edge); border-radius: 6px; color: var(--ink); padding: 4px 14px; cursor: pointer; }
+
+/* ---------- footer ---------- */
+footer { padding: 36px var(--gutter) 44px; border-top: 1px solid rgba(226,229,236,.07); background: rgba(10,15,29,.65); font-size: .95rem; }
+footer .in { max-width: 1040px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 14px 48px; align-items: baseline; }
+footer strong { display: block; font-weight: 400; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--teal); margin-bottom: 2px; }
+.copy { background: transparent; border: 1px solid rgba(226,229,236,.3); border-radius: 999px; color: var(--soft); font: inherit; font-size: .75rem; padding: 0 9px; margin-left: 8px; cursor: pointer; }
+.copy:hover { color: #fff; border-color: var(--edge); }
+footer .small { margin-left: auto; color: var(--dim); font-size: .85rem; }
+
+@media (max-width: 820px) {
+  .split, .cols { grid-template-columns: 1fr; }
+  .split .memento { max-width: 340px; margin-inline: auto; width: 100%; }
+  .landscape { aspect-ratio: 16 / 7; }
+}
+@media (max-width: 640px) {
+  .menu-btn { display: block; }
+  .links { display: none; position: absolute; top: calc(100% + 8px); right: var(--gutter); flex-direction: column; gap: 2px; margin: 0; padding: 12px 24px 14px 18px; background: rgba(36, 40, 54, .94); backdrop-filter: blur(10px); border: 1px solid var(--edge); border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.45); overflow: visible; }
+  .nav.open .links { display: flex; }
+  .links a { font-family: var(--font-display); font-size: 1.15rem; padding: 5px 0 5px 18px; }
+}
+@media (max-width: 600px) {
+  .nav { gap: 14px; }
+  .dlg { padding: 18px 20px 28px; }
+  .panel { padding: 2px 20px; }
+  .row { grid-template-columns: 1fr; }
+  .tl-row { grid-template-columns: 1fr; row-gap: 6px; padding: 22px 0; }
+  .tl-when { padding-top: 0; }
+  .cite { padding: 20px 20px 18px; }
+  .family { gap: 16px; }
+  .member h2 { font-size: 1.4rem; }
+  .member figcaption { padding-top: 14px; }
+  .member figcaption p { font-size: .98rem; }
+  footer .small { margin-left: 0; flex-basis: 100%; }
+  .split .memento { max-width: 260px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page.active, .dlg .next { animation: none !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="paper-rabbit" viewBox="0 0 24 24">
+      <polygon points="9,3 11,11 7,11" fill="#f4f1e8"/>
+      <polygon points="13,2 14,11 11,11" fill="#dcd6c8"/>
+      <polygon points="7,11 15,11 12,15" fill="#f2e4ae"/>
+      <polygon points="5,22 12,15 19,22" fill="#f4f1e8"/>
+      <polygon points="12,15 15,11 19,22" fill="#bfb9a9"/>
+    </symbol>
+    <symbol id="swirl" viewBox="0 0 16 16">
+      <path d="M8 8.5c0-.8.9-1.2 1.5-.7.9.7.4 2.3-.9 2.6-1.8.4-3.2-1.3-2.7-3 .6-2.1 3.3-2.9 5-1.5 2.2 1.8 1.6 5.4-1.1 6.4-3.1 1.2-6.4-1.1-6.3-4.4" fill="none" stroke="#8fc6d9" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="sky" aria-hidden="true"><canvas id="stars"></canvas></div>
+
+<nav class="nav" id="nav">
+  <a class="brand" href="#home" aria-label="Nanxi Chen, home">
+    <svg aria-hidden="true"><use href="#paper-rabbit"/></svg>
+    Nanxi Chen
+  </a>
+  <button class="menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="navLinks">Menu</button>
+  <div class="links" id="navLinks" role="navigation">
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#experience">Experience</a>
+    <a href="#research">Research</a>
+    <a href="#awards">Awards</a>
+    <a href="#moon">Moon &amp; Bunny</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ==================== HOME ==================== -->
+<section class="page" id="page-home" aria-label="Home">
+  <div class="title-screen">
+    <div class="caps">A portfolio</div>
+    <h1>Nanxi Chen</h1>
+    <p class="sub">Auditing · Data · Chengdu</p>
+    <ul class="menu">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#awards">Awards</a></li>
+      <li><a href="#moon">Moon &amp; Bunny</a></li>
+    </ul>
+    <canvas class="landscape" id="scene-home" aria-hidden="true"></canvas>
+  </div>
+
+  <div class="home" id="memories">
+    <div class="dlg tagged">
+      <span class="who">Dr. Rosalene</span>
+      <p class="zh">“结局永远也不会比过程重要。”</p>
+      <p class="en">“The ending is never more important than the journey.”</p>
+      <span class="next" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== ABOUT ==================== -->
+<section class="page" id="page-about" aria-label="About">
+  <header class="card">
+    <div class="caps">Hello</div>
+    <h1>About</h1>
+  </header>
+  <div class="wrap">
+    <div class="split">
+      <figure class="memento">
+        <img src="img/17.jpg" alt="Nanxi hiding behind a white plush hat with big blue eyes, holding a drink">
+        <figcaption><svg class="swirl" aria-hidden="true"><use href="#swirl"/></svg>Chengdu, Sichuan</figcaption>
+      </figure>
+      <div class="dlg tagged bio">
+        <span class="who">Nanxi</span>
+        <p>I'm Nanxi Chen, a Bachelor of Management student in Auditing at a "211 Project" university in Sichuan Province, ranked 4th of 49 with a GPA of 4.27/5.0.</p>
+        <p>My work sits between accounting and data. I have carried out audit fieldwork on IPO and listed-company engagements at Pan-China Certified Public Accountants, tested purchasing controls for PwC, and built a customer churn model in Python for a BCG data analytics program.</p>
+        <p>In research I lead an empirical study of how directors' and officers' liability insurance affects supply-chain relationships among Chinese A-share firms, and I am second author of a 2025 paper on brand livestreamers and consumer purchase intention.</p>
+        <p>Outside the spreadsheet I like musicals, travel, cooking and reading, and I have a soft spot for rabbits of every kind: paper, plush and pixel.</p>
+        <span class="next" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <h2 class="sec">Education</h2>
+    <div class="dlg panel">
+      <div class="row">
+        <h3>Bachelor of Management in Auditing</h3>
+        <span class="when">Sept 2023 – Jun 2027</span>
+        <p class="key">GPA 4.27 / 5.0 · Rank 4 / 49</p>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <h2 class="sec">Skills</h2>
+        <div class="dlg panel">
+          <dl class="kv">
+            <div><dt>Data &amp; statistics</dt><dd>Python, Stata, SPSS, AMOS</dd></div>
+            <div><dt>Office &amp; finance</dt><dd>Excel, MS Project, UFIDA</dd></div>
+          </dl>
+        </div>
+      </div>
+      <div>
+        <h2 class="sec">Languages &amp; Certificates</h2>
+        <div class="dlg panel">
+          <dl class="kv">
+            <div><dt>Languages</dt><dd>Chinese (native) · English (advanced)</dd></div>
+            <div><dt>Certifications</dt><dd>Junior Accounting Professional Qualification · ACCA (BT, LW, TX)</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== EXPERIENCE ==================== -->
+<section class="page" id="page-experience" aria-label="Experience">
+  <div class="sheet">
+    <header class="sheet-head">
+      <div class="caps">Experience</div>
+      <h1>Four internships in audit and data.</h1>
+      <p class="lede">Fieldwork at an accounting firm and a Big Four practice, a data analytics program with BCG, and a summer in a bank's audit department.</p>
+    </header>
+    <ol class="tl">
+      <li class="tl-row">
+        <div class="tl-when">Aug – Sept 2026</div>
+        <div class="tl-body">
+          <h3>Pan-China Certified Public Accountants LLP</h3>
+          <div class="tl-role">Audit Intern</div>
+          <p>IPO and listed-company audit engagements.</p>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Jul 2026</div>
+        <div class="tl-body">
+          <h3>The Boston Consulting Group (BCG)</h3>
+          <div class="tl-role">Data Analytics Intern</div>
+          <p>Customer churn analysis and a random forest model in Python.</p>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Jan – Feb 2025</div>
+        <div class="tl-body">
+          <h3>PricewaterhouseCoopers (PwC)</h3>
+          <div class="tl-role">Audit Intern</div>
+          <p>Control testing of a client's purchasing process.</p>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Jun – Jul 2024</div>
+        <div class="tl-body">
+          <h3>Ya'an Rural Commercial Bank</h3>
+          <div class="tl-role">Audit Department Intern</div>
+          <p>Audit workpapers and credit-file compliance review.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== RESEARCH ==================== -->
+<section class="page" id="page-research" aria-label="Research">
+  <div class="sheet">
+    <header class="sheet-head">
+      <div class="caps">Research</div>
+      <h1>Questions I have followed with data.</h1>
+      <p class="lede">Corporate finance, agricultural economics and consumer behaviour.</p>
+    </header>
+
+    <div class="tl-label">Publication</div>
+    <figure class="memento cite">
+      <blockquote>The Impact of Brand Livestreamer Information-Source Characteristics on Consumer Purchase Intention</blockquote>
+      <figcaption>Deng, Y. J., &amp; <strong>Chen, N. X.</strong> · <em>Modern Business</em>, 2025, No. 6, pp. 19–22</figcaption>
+    </figure>
+
+    <div class="tl-label">Projects</div>
+    <ol class="tl">
+      <li class="tl-row">
+        <div class="tl-when">Dec 2025 – Sept 2026</div>
+        <div class="tl-body">
+          <div class="tl-eyebrow">Project Leader</div>
+          <h3>Directors' and Officers' Liability Insurance and Supply-Chain Stability</h3>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Dec 2024 – Oct 2025</div>
+        <div class="tl-body">
+          <div class="tl-eyebrow">Project Leader</div>
+          <h3>Standardized vs. Non-standardized Agricultural Products under Rural Revitalization</h3>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Dec 2023 – Jun 2024</div>
+        <div class="tl-body">
+          <div class="tl-eyebrow">Second Author</div>
+          <h3>Brand Livestreamer Source Characteristics and Purchase Intention</h3>
+        </div>
+      </li>
+    </ol>
+
+    <canvas class="vignette" id="scene-research" aria-hidden="true"></canvas>
+  </div>
+</section>
+
+<!-- ==================== AWARDS ==================== -->
+<section class="page" id="page-awards" aria-label="Awards">
+  <div class="sheet">
+    <header class="sheet-head">
+      <div class="caps">Awards</div>
+      <h1>Competitions &amp; honors.</h1>
+      <p class="lede">Case analysis, marketing strategy and student leadership.</p>
+    </header>
+
+    <div class="tl-label">Competitions</div>
+    <ol class="tl">
+      <li class="tl-row">
+        <div class="tl-when">May 2025</div>
+        <div class="tl-body">
+          <div class="tl-award">National First Prize</div>
+          <h3>Social Science Award Marketing Contest</h3>
+          <div class="tl-role">Core Member</div>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Mar 2025 – Present</div>
+        <div class="tl-body">
+          <div class="tl-award">Provincial Silver Award</div>
+          <h3>China International College Students' Innovation Competition</h3>
+          <div class="tl-role">Team Leader</div>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">2025</div>
+        <div class="tl-body">
+          <div class="tl-award">Provincial Second Prize</div>
+          <h3>National E-commerce "Innovation, Creativity and Entrepreneurship" Competition</h3>
+          <div class="tl-role">Team Leader</div>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Oct – Nov 2024</div>
+        <div class="tl-body">
+          <h3>"EY Cup" National University Business Case Analysis Competition</h3>
+          <div class="tl-role">Core Member</div>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">Mar – Jun 2024</div>
+        <div class="tl-body">
+          <div class="tl-award">College Outstanding Project</div>
+          <h3>China International College Students' Innovation Competition</h3>
+          <div class="tl-role">Core Member</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="tl-label">Leadership &amp; Honors</div>
+    <ol class="tl">
+      <li class="tl-row">
+        <div class="tl-when">May 2025 – May 2026</div>
+        <div class="tl-body">
+          <h3>Student Foreign Language Association</h3>
+          <div class="tl-role">Youth League Branch Secretary</div>
+        </div>
+      </li>
+      <li class="tl-row">
+        <div class="tl-when">2024 – 2025</div>
+        <div class="tl-body">
+          <h3>University Honors</h3>
+          <ul class="tl-list">
+            <li>Outstanding Student</li>
+            <li>Outstanding Youth League Member</li>
+            <li>Advanced Individual in Summer Social Practice</li>
+            <li>University Scholarship</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== MOON & BUNNY ==================== -->
+<section class="page" id="page-moon" aria-label="Moon and Bunny">
+  <header class="moon-head">
+    <div class="caps">Moon &amp; Bunny</div>
+    <h1>See You on the Moon</h1>
+    <p>Yuanyuan, Daisy, and a story folded into a paper rabbit.</p>
+    <canvas class="landscape" id="scene-moon" aria-hidden="true"></canvas>
+  </header>
+
+  <div class="family">
+    <figure class="member">
+      <div class="memento"><div class="crop"><img src="img/5.jpg" alt="Yuanyuan, a cream-white plush rabbit in a floral dress with a lace collar" loading="lazy" style="object-position:center 35%"></div></div>
+      <figcaption>
+        <span class="caps">Daughter · with me</span>
+        <h2>Yuanyuan</h2>
+        <p>Soft and white, sharp-tongued, soft-hearted.</p>
+      </figcaption>
+    </figure>
+    <figure class="member">
+      <div class="memento"><div class="crop"><img src="img/20.jpg" alt="Daisy, a beige plush rabbit in a black graduation cap holding a rolled diploma" loading="lazy" style="object-position:center 40%"></div></div>
+      <figcaption>
+        <span class="caps">Daughter · with Will</span>
+        <h2>Daisy</h2>
+        <p>Wears the cap, and keeps a wish for her mother.</p>
+      </figcaption>
+    </figure>
+  </div>
+
+  <article class="story">
+    <div class="story-title">
+      <div class="caps">A story in memories</div>
+      <h2>A Little Home <em>in Beijing</em></h2>
+    </div>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">0</span><span class="caps">Prologue</span><h3>Paper Rabbits</h3></div>
+      <div class="prose">
+        <p class="drop">In a game I love, a girl named River spends her life folding paper rabbits. They fill the house like snow that never melts. Everything she cannot say, she folds into them.</p>
+        <p>I am a girl who loves rabbits too. So I have folded a story into one, and left it here.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">I</span><span class="caps">Chapter One</span><h3>The First Meeting</h3></div>
+      <div class="prose">
+        <p class="drop">The day we met, he read me a poem. I did not know yet that some poems are written for later. I told him I was a bunny. He laughed, and did not argue.</p>
+        <p>His name was Will. He walked too fast, and I was always half-running to keep up. I teased him about his music. Later, I knew every one of those songs by heart.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">II</span><span class="caps">Chapter Two</span><h3>A Little Home in Beijing</h3></div>
+      <div class="prose">
+        <p class="drop">It was raining the day I arrived in Beijing, and the road was all mud. We carried my things home one by one, shoes soaked through, and neither of us complained. Later the sky cleared, and we lay side by side, watching the clouds come apart.</p>
+        <p>It was a very small apartment. He took me to the gym and watched me grow a little stronger each time. He brewed my herbal medicine and reminded me to rinse my nose. We ate together, argued about films late into the night, and wandered through shopping malls with nowhere to be. I would sit on the edge of the bed, waiting for the door to open.</p>
+      </div>
+      <blockquote class="pull"><p>“In those ordinary days, that tiny apartment really felt like home.”</p></blockquote>
+    </section>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">III</span><span class="caps">Chapter Three</span><h3>Yuanyuan and Daisy</h3></div>
+      <div class="prose">
+        <p class="drop">There were two daughters in that home. The soft white one is Yuanyuan. The one in the graduation cap is Daisy.</p>
+        <p>Yuanyuan had a sharp tongue and loved to complain about her father behind his back. Every time, he solemnly declared that he loved both daughters exactly the same. At night they slept under one blanket, head against head.</p>
+        <p>Daisy's cap is a wish: that one day her mother will wear a master's cap of her own.</p>
+      </div>
+      <div class="pair">
+        <figure class="memento"><button class="zoom" type="button"><div class="crop"><img src="img/18.jpg" alt="Daisy in her graduation cap and Yuanyuan in her floral dress sitting side by side on a sofa" loading="lazy"></div></button><figcaption>At home in Beijing</figcaption></figure>
+        <figure class="memento"><button class="zoom" type="button"><div class="crop"><img src="img/6.jpg" alt="Black-and-white photo of Yuanyuan and Daisy asleep under one blanket" loading="lazy"></div></button><figcaption>Under one blanket</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="chapter rainy">
+      <canvas id="rain" aria-hidden="true"></canvas>
+      <div class="opener center"><span class="num">IV</span><span class="caps">Chapter Four</span><h3>That Long Summer</h3></div>
+      <div class="prose center">
+        <p>Then came a long summer. Two young people loved with everything they had, and neither yet quite knew how. The right words always came too late, and what each of them meant stayed just out of reach, somewhere behind the fog.</p>
+        <p>The rain went on for a long, long time.</p>
+        <p>In the end, we did not reach the clear sky together.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">V</span><span class="caps">Chapter Five</span><h3>See You on the Moon</h3></div>
+      <div class="prose">
+        <p class="drop">In that game, a boy tells a girl that they will meet on the moon anyway. I have always loved that line. People who lose each other still truly met.</p>
+        <p>His last gift to me was a record I had wanted for a long time. I keep it with Yuanyuan.</p>
+      </div>
+      <div class="dlg tagged quote-dlg">
+        <span class="who">John</span>
+        <p>“Then we'll meet on the moon anyway, silly!”</p>
+        <span class="next" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="opener"><span class="num">∞</span><span class="caps">Epilogue</span><h3>This Home</h3></div>
+      <div class="prose">
+        <p class="drop">That little home was real. The rainy days, the walks, the late-night arguments, two rabbits under one blanket: all of it was real. The ending does not make any of it untrue.</p>
+        <p>Yuanyuan lives with me now, and Daisy lives with Will. The sisters live apart, one keeping me company and one keeping him company, and between them they remember that little home. I still mean to see the heavy snow I imagined as a child.</p>
+        <p>If we ever meet again in some corner of the world, I think we will both be okay.</p>
+      </div>
+      <div class="dlg tagged quote-dlg">
+        <span class="who">Dr. Rosalene</span>
+        <p>“The ending is never more important than the journey.”</p>
+        <span class="next" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <div class="coda">
+      <svg aria-hidden="true"><use href="#paper-rabbit"/></svg>
+      <div class="end">See you on the moon.</div>
+    </div>
+  </article>
+</section>
+
+
+  <nav class="pager" id="pager" aria-label="More pages"></nav>
+</main>
+
+<footer>
+  <div class="in">
+    <div><strong>Contact</strong>Email: <span id="email">chennancy596@gmail.com</span><button class="copy" type="button" id="copyBtn">Copy</button></div>
+    <div><strong>Based in</strong>Chengdu, Sichuan, China</div>
+    <span class="small">© 2026 Nanxi Chen</span>
+  </div>
+</footer>
+
+<div class="music" id="music">
+  <button type="button" id="musicBtn" aria-pressed="false" aria-label="Play background music"><span class="ico-play" aria-hidden="true"></span><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></button>
+  <div class="music-meta"><span class="caps" id="musicState">Music · tap to play</span><span class="t" id="musicTitle">Everything's Alright</span></div>
+</div>
+<audio id="bgm" preload="none"></audio>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged photo">
+  <button class="close" type="button" id="lbClose">Close</button>
+  <div><img id="lbImg" alt=""><p id="lbCap"></p></div>
+</div>
+
+<script>
+(function () {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  /* ---------- soft starfield ---------- */
+  const sky = document.getElementById("stars"), sctx = sky.getContext("2d");
+  let stars = [];
+  function sizeSky() {
+    sky.width = innerWidth * DPR; sky.height = innerHeight * DPR;
+    sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = Math.round(innerWidth * innerHeight / 5200);
+    stars = Array.from({ length: n }, () => ({
+      x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+      r: Math.random() < .08 ? 1.4 : .4 + Math.random() * .7,
+      p: Math.random() * 6.28, v: .4 + Math.random() * 1.2,
+      c: Math.random() < .15 ? "242,228,174" : "236,240,250"
+    }));
+  }
+  function drawSky(t) {
+    sctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const s of stars) {
+      const a = reduce ? .6 : .25 + .65 * (.5 + .5 * Math.sin(t / 1000 * s.v + s.p));
+      sctx.fillStyle = "rgba(" + s.c + "," + a + ")";
+      sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, 6.283); sctx.fill();
+      if (s.r > 1.2) { sctx.fillStyle = "rgba(" + s.c + "," + a * .15 + ")"; sctx.beginPath(); sctx.arc(s.x, s.y, 4, 0, 6.283); sctx.fill(); }
+    }
+  }
+
+  /* ---------- painted landscapes (logical 320 x 120 space) ---------- */
+  function fit(cv, LW, LH) {
+    const r = cv.getBoundingClientRect(); if (!r.width) return null;
+    cv.width = Math.round(r.width * DPR); cv.height = Math.round(r.height * DPR);
+    const ctx = cv.getContext("2d");
+    const s = cv.width / LW; ctx.setTransform(s, 0, 0, s, 0, cv.height - LH * s); // anchor bottom
+    return { ctx, top: -(cv.height / s - LH) };
+  }
+  function moon(ctx, cx, cy, r) {
+    const g = ctx.createRadialGradient(cx, cy, r * .8, cx, cy, r * 4);
+    g.addColorStop(0, "rgba(242,228,174,.22)"); g.addColorStop(1, "rgba(242,228,174,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r * 4, 0, 6.283); ctx.fill();
+    const d = ctx.createRadialGradient(cx - r * .35, cy - r * .35, r * .1, cx, cy, r);
+    d.addColorStop(0, "#fdf6dc"); d.addColorStop(1, "#e3d196");
+    ctx.fillStyle = d; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "rgba(190,168,110,.28)";
+    for (const [a, b, s] of [[.35, -.2, .22], [-.3, .35, .16], [.12, .45, .1], [-.4, -.32, .1]]) { ctx.beginPath(); ctx.arc(cx + a * r, cy + b * r, s * r, 0, 6.283); ctx.fill(); }
+  }
+  function ridge(ctx, W, H, base, amp, f1, f2, ph, color) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 2) ctx.lineTo(x, base + Math.sin(x * f1 + ph) * amp + Math.sin(x * f2 + ph * 2) * amp * .5);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  }
+  function tree(ctx, x, gy, s) {
+    ctx.fillStyle = "#0b1120"; ctx.fillRect(x - 1.2 * s, gy - 16 * s, 2.4 * s, 16 * s);
+    for (const [dx, dy, r] of [[0, -24, 10], [-8, -19, 8], [8, -19, 8], [-4, -30, 7], [5, -29, 7]]) { ctx.beginPath(); ctx.arc(x + dx * s, gy + dy * s, r * s, 0, 6.283); ctx.fill(); }
+  }
+  function paperRabbit(ctx, x, y, size) { // the brand rabbit, drawn from its 24-unit polygons
+    const k = size / 24, P = [["#f4f1e8", [9,3, 11,11, 7,11]], ["#dcd6c8", [13,2, 14,11, 11,11]], ["#f2e4ae", [7,11, 15,11, 12,15]], ["#f4f1e8", [5,22, 12,15, 19,22]], ["#bfb9a9", [12,15, 15,11, 19,22]]];
+    for (const [c, p] of P) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x + p[0] * k, y + p[1] * k); for (let i = 2; i < p.length; i += 2) ctx.lineTo(x + p[i] * k, y + p[i + 1] * k); ctx.closePath(); ctx.fill(); }
+  }
+
+  const homeCv = document.getElementById("scene-home"), moonCv = document.getElementById("scene-moon");
+  let homeF = null, moonF = null;
+  function sceneHome(t) {
+    if (!homeF) return; const { ctx } = homeF, W = 320, H = 120;
+    ctx.clearRect(-10, -400, W + 20, H + 420);
+    moon(ctx, 250, 26, 11);
+    ridge(ctx, W, H, 86, 5, .028, .011, .7, "#16214a");
+    // cliff
+    const top = x => 66 + Math.sin(x * .07) * 1.5 + (x < 176 ? (176 - x) * 1.6 : 0);
+    ctx.fillStyle = "#0f1730"; ctx.beginPath(); ctx.moveTo(150, H);
+    for (let x = 150; x <= W; x += 1) ctx.lineTo(x, Math.max(top(x), 40));
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    // lighthouse
+    const lx = 205, ly = top(lx);
+    const body = ctx.createLinearGradient(lx - 3, 0, lx + 3, 0); body.addColorStop(0, "#e3e7ef"); body.addColorStop(1, "#8e98ad");
+    ctx.fillStyle = body; ctx.beginPath(); ctx.moveTo(lx - 3.2, ly); ctx.lineTo(lx + 3.2, ly); ctx.lineTo(lx + 2.2, ly - 25); ctx.lineTo(lx - 2.2, ly - 25); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#2a3550"; ctx.fillRect(lx - 3, ly - 30.5, 6, 5.5);
+    ctx.fillStyle = "#3a4466"; ctx.beginPath(); ctx.moveTo(lx - 4, ly - 30.5); ctx.lineTo(lx + 4, ly - 30.5); ctx.lineTo(lx, ly - 34.5); ctx.closePath(); ctx.fill();
+    const glow = reduce ? 1 : .75 + .25 * Math.sin(t / 900);
+    const lg = ctx.createRadialGradient(lx, ly - 28, 0, lx, ly - 28, 9); lg.addColorStop(0, "rgba(255,236,170," + .7 * glow + ")"); lg.addColorStop(1, "rgba(255,236,170,0)");
+    ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(lx, ly - 28, 9, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "#ffeaa6"; ctx.fillRect(lx - 1.2, ly - 29.5, 2.4, 3);
+    const a = reduce ? -.18 : Math.sin(t / 3200) * .3 - .12;
+    ctx.save(); ctx.translate(lx, ly - 28); ctx.rotate(Math.PI + a);
+    const bg = ctx.createLinearGradient(0, 0, 130, 0); bg.addColorStop(0, "rgba(255,236,170,.26)"); bg.addColorStop(1, "rgba(255,236,170,0)");
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(130, -13); ctx.lineTo(130, 13); ctx.closePath(); ctx.fill(); ctx.restore();
+    ctx.fillStyle = "#0d1528"; tree(ctx, 236, top(236), 1);
+    ridge(ctx, W, H, 106, 3, .05, .021, 2.1, "#0a0f1c");
+    const gy = 106 + Math.sin(84 * .05 + 2.1) * 3 + Math.sin(84 * .021 + 4.2) * 1.5;
+    paperRabbit(ctx, 78, gy - 11.5, 12);
+  }
+  function sceneMoon(t) {
+    if (!moonF) return; const { ctx } = moonF, W = 320, H = 120;
+    ctx.clearRect(-10, -400, W + 20, H + 420);
+    moon(ctx, 160, 44, 24);
+    ridge(ctx, W, H, 92, 6, .024, .009, 1.6, "#16214a");
+    ridge(ctx, W, H, 104, 4, .04, .017, .2, "#0f1730");
+    ridge(ctx, W, H, 110, 2, .03, .013, 0, "#0a0f1c");
+    ctx.fillStyle = "#0b1222"; tree(ctx, 58, 111, 1.05);
+    const bob = reduce ? 0 : Math.sin(t / 1200) * .6;
+    const g1 = 110 + Math.sin(196 * .03) * 2 + Math.sin(196 * .013) * 1;
+    paperRabbit(ctx, 190, g1 - 12.5 + bob, 13);
+    const g2 = 110 + Math.sin(212 * .03) * 2 + Math.sin(212 * .013) * 1;
+    paperRabbit(ctx, 206, g2 - 9, 9.5);
+  }
+
+  const resCv = document.getElementById("scene-research");
+  let resF = null;
+  const flies = Array.from({ length: 9 }, (_, i) => ({ x: 150 + i * 17 + (i % 3) * 5, y: 56 + (i * 7) % 22, p: i * 1.7 }));
+  function sceneResearch(t) {
+    if (!resF) return; const { ctx } = resF, W = 320, H = 120;
+    ctx.clearRect(-10, -400, W + 20, H + 420);
+    moon(ctx, 92, 48, 10);
+    ridge(ctx, W, H, 98, 4, .03, .012, .9, "#1b2855");
+    // a gentle rise on the right where the rabbit sits
+    ctx.fillStyle = "#121c3a"; ctx.beginPath(); ctx.moveTo(120, H);
+    for (let x = 120; x <= W; x += 2) ctx.lineTo(x, 104 - Math.sin((x - 120) / 200 * Math.PI) * 18);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ridge(ctx, W, H, 112, 2, .04, .02, 1.3, "#0a0f1c");
+    ctx.fillStyle = "#0d1528"; tree(ctx, 262, 92, .8);
+    // graduate paper rabbit
+    const rx = 208, ry = 104 - Math.sin((220 - 120) / 200 * Math.PI) * 18 - 21;
+    paperRabbit(ctx, rx, ry, 22);
+    const k = 22 / 24, cx = rx + 11 * k, cy = ry + 9.6 * k;
+    ctx.fillStyle = "#1a2033"; ctx.beginPath(); ctx.moveTo(cx - 6, cy); ctx.lineTo(cx, cy - 2); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx, cy + 2); ctx.closePath(); ctx.fill();
+    ctx.fillRect(cx - 2.4, cy, 4.8, 2.4);
+    ctx.strokeStyle = "#f2e4ae"; ctx.lineWidth = .6; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 5, cy + .6); ctx.lineTo(cx + 5.3, cy + 4.5); ctx.stroke();
+    // fireflies drifting up from the grass
+    for (const f of flies) {
+      const a = reduce ? .6 : .35 + .5 * (.5 + .5 * Math.sin(t / 700 + f.p));
+      const dy = reduce ? 0 : Math.sin(t / 1800 + f.p) * 2;
+      const g = ctx.createRadialGradient(f.x, f.y + dy, 0, f.x, f.y + dy, 2.4);
+      g.addColorStop(0, "rgba(242,228,174," + a + ")"); g.addColorStop(1, "rgba(242,228,174,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y + dy, 2.4, 0, 6.283); ctx.fill();
+    }
+  }
+
+  /* ---------- rain for chapter four ---------- */
+  const rainCv = document.getElementById("rain"), rctx = rainCv.getContext("2d");
+  let drops = [], rainVisible = false, rw = 0, rh = 0;
+  function sizeRain() {
+    const r = rainCv.getBoundingClientRect(); if (!r.width) return;
+    rw = r.width; rh = r.height;
+    rainCv.width = rw * DPR; rainCv.height = rh * DPR; rctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    drops = Array.from({ length: Math.round(rw * rh / 6000) }, () => ({ x: Math.random() * rw, y: Math.random() * rh, l: 10 + Math.random() * 14, v: 3 + Math.random() * 3 }));
+  }
+  function drawRain() {
+    rctx.clearRect(0, 0, rw, rh);
+    rctx.strokeStyle = "rgba(180,200,230,.22)"; rctx.lineWidth = 1; rctx.beginPath();
+    for (const d of drops) {
+      rctx.moveTo(d.x, d.y); rctx.lineTo(d.x - d.l * .12, d.y + d.l);
+      if (!reduce) { d.y += d.v; d.x -= d.v * .12; if (d.y > rh) { d.y = -d.l; d.x = Math.random() * (rw + 40); } }
+    }
+    rctx.stroke();
+  }
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { rainVisible = es[0].isIntersecting; }).observe(rainCv);
+
+
+  /* ---------- loop ---------- */
+  let current = "home";
+  function frame(t) {
+    drawSky(t);
+    if (current === "home") sceneHome(t);
+    if (current === "research") sceneResearch(t);
+    if (current === "moon") { sceneMoon(t); if (rainVisible || reduce) drawRain(); }
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  function layout() {
+    sizeSky();
+    if (current === "home") homeF = fit(homeCv, 320, 120);
+    if (current === "research") resF = fit(resCv, 320, 120);
+    if (current === "moon") { moonF = fit(moonCv, 320, 120); sizeRain(); }
+    if (reduce) frame(0);
+  }
+
+  /* ---------- router ---------- */
+  const pages = ["home", "about", "experience", "research", "awards", "moon"];
+  const nav = document.getElementById("nav"), menuBtn = document.getElementById("menuBtn"), pager = document.getElementById("pager");
+  menuBtn.addEventListener("click", () => { const o = nav.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", String(o)); });
+  document.addEventListener("click", e => { if (nav.classList.contains("open") && !nav.contains(e.target)) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && nav.classList.contains("open")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); menuBtn.focus(); } });
+  const links = document.querySelectorAll(".links a");
+  function show() {
+    const id = (location.hash || "#home").slice(1);
+    current = pages.includes(id) ? id : "home";
+    pages.forEach(p => document.getElementById("page-" + p).classList.toggle("active", p === current));
+    links.forEach(a => a.getAttribute("href") === "#" + current ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    const label = document.querySelector('.links a[href="#' + current + '"]').textContent;
+    document.title = current === "home" ? "Nanxi Chen" : "Nanxi Chen · " + label;
+    window.scrollTo(0, 0);
+    nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false");
+    const i = pages.indexOf(current), name = k => document.querySelector('.links a[href="#' + pages[k] + '"]').textContent;
+    pager.hidden = current === "home";
+    if (!pager.hidden) {
+      const prev = '<a class="prev" href="#' + pages[i - 1] + '"><span class="caps">Previous</span><span class="t">← ' + name(i - 1) + '</span></a>';
+      const nxt = i < pages.length - 1
+        ? '<a class="next" href="#' + pages[i + 1] + '"><span class="caps">Next</span><span class="t">' + name(i + 1) + ' →</span></a>'
+        : '<a class="next" href="#home"><span class="caps">The end</span><span class="t">Back to the start →</span></a>';
+      pager.innerHTML = prev + nxt;
+    }
+    requestAnimationFrame(layout);
+  }
+  window.addEventListener("resize", layout);
+  window.addEventListener("hashchange", show);
+  show();
+  if (!reduce) requestAnimationFrame(frame);
+
+
+  /* ---------- background music: Everything's Alright, then For River, alternating forever ---------- */
+  const tracks = [
+    { src: "audio/everythings-alright.mp3", title: "Everything's Alright" },
+    { src: "audio/for-river.mp3", title: "For River (Piano)" }
+  ];
+  const bgm = document.getElementById("bgm"), music = document.getElementById("music"), musicBtn = document.getElementById("musicBtn");
+  const musicTitle = document.getElementById("musicTitle"), musicState = document.getElementById("musicState");
+  let track = 0, userStopped = false;
+  try { userStopped = localStorage.getItem("bgm-off") === "1"; } catch (e) {}
+  bgm.volume = .55;
+  function load(i) { track = i; bgm.src = tracks[i].src; musicTitle.textContent = tracks[i].title; }
+  function setUI(on) {
+    music.classList.toggle("playing", on);
+    musicBtn.setAttribute("aria-pressed", String(on));
+    musicBtn.setAttribute("aria-label", on ? "Pause background music" : "Play background music");
+    musicState.textContent = on ? "Now playing" : "Music · tap to play";
+    if (on) music.classList.remove("nudge");
+  }
+  function play() { if (!bgm.src) load(track); const p = bgm.play(); if (p) p.then(() => setUI(true), () => setUI(false)); }
+  function pause() { bgm.pause(); setUI(false); }
+  bgm.addEventListener("ended", () => { load((track + 1) % tracks.length); play(); });
+  musicBtn.addEventListener("click", () => {
+    if (bgm.paused) { userStopped = false; play(); } else { userStopped = true; pause(); }
+    try { localStorage.setItem("bgm-off", userStopped ? "1" : "0"); } catch (e) {}
+  });
+  load(0);
+  // try to start right away; browsers that block sound before any interaction fall back to the first tap or key press
+  if (!userStopped) {
+    const p = bgm.play();
+    if (p) p.then(() => setUI(true), () => { setUI(false); music.classList.add("nudge"); musicState.textContent = "Tap anywhere for music"; });
+  }
+  function firstTouch(e) {
+    window.removeEventListener("pointerdown", firstTouch, true); window.removeEventListener("keydown", firstTouch, true); window.removeEventListener("touchend", firstTouch, true);
+    if (!userStopped && bgm.paused && !music.contains(e.target)) play();
+  }
+  window.addEventListener("pointerdown", firstTouch, true);
+  window.addEventListener("keydown", firstTouch, true);
+  window.addEventListener("touchend", firstTouch, true);
+
+  /* ---------- lightbox ---------- */
+  const lb = document.getElementById("lightbox"), lbImg = document.getElementById("lbImg"), lbCap = document.getElementById("lbCap");
+  let last = null;
+  document.querySelectorAll(".zoom").forEach(btn => btn.addEventListener("click", () => {
+    const img = btn.querySelector("img");
+    lbImg.src = img.src; lbImg.alt = img.alt;
+    const cap = btn.closest("figure").querySelector("figcaption");
+    lbCap.textContent = cap ? cap.textContent : "";
+    last = btn; lb.hidden = false; document.getElementById("lbClose").focus();
+  }));
+  function close() { lb.hidden = true; if (last) last.focus(); }
+  document.getElementById("lbClose").addEventListener("click", close);
+  lb.addEventListener("click", e => { if (e.target === lb || e.target.parentElement === lb) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) close(); });
+
+  /* ---------- copy email ---------- */
+  const btn = document.getElementById("copyBtn");
+  btn.addEventListener("click", () => {
+    const el = document.getElementById("email");
+    const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1600); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(el.textContent).then(done, fallback); } catch (e) { fallback(); }
+  });
+})();
+</script>
+</html>
